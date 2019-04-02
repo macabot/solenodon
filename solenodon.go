@@ -1,9 +1,5 @@
 package solenodon
 
-import (
-	"errors"
-)
-
 // see: https://github.com/Jeffail/gabs/blob/master/gabs.go
 
 // Note that encoding/json by default will parse:
@@ -11,11 +7,6 @@ import (
 // Note that github.com/BurntSushi/toml by default will parse:
 // - all integer values into int64
 // Note that encoding/xml cannot be mapped to an interface{}
-
-// List of errors
-var (
-	ErrNotFound = errors.New("solenodon: not found")
-)
 
 // Container contains data
 type Container struct {
@@ -26,9 +17,10 @@ type Container struct {
 // keys must be of type:
 // - string
 // - int
-// error may be:
-// - ErrNotFound
-func (c *Container) Search(keys ...interface{}) (*Container, error) {
+func (c *Container) Search(keys ...interface{}) *Container {
+	if c == nil {
+		return nil
+	}
 	data := c.Data
 	for _, key := range keys {
 		switch w := data.(type) {
@@ -38,30 +30,30 @@ func (c *Container) Search(keys ...interface{}) (*Container, error) {
 				var ok bool
 				data, ok = w[v]
 				if !ok {
-					return nil, ErrNotFound
+					return nil
 				}
 			default:
-				return nil, ErrNotFound
+				return nil
 			}
 		case map[interface{}]interface{}:
 			var ok bool
 			data, ok = w[key]
 			if !ok {
-				return nil, ErrNotFound
+				return nil
 			}
 		case []interface{}:
 			switch v := key.(type) {
 			case int:
 				if v >= len(w) {
-					return nil, ErrNotFound
+					return nil
 				}
 				data = w[v]
 			default:
-				return nil, ErrNotFound
+				return nil
 			}
 		default:
-			return nil, ErrNotFound
+			return nil
 		}
 	}
-	return &Container{Data: data}, nil
+	return &Container{Data: data}
 }

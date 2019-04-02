@@ -22,23 +22,21 @@ func equalTimes(expected, actual interface{}) bool {
 }
 
 type searchTest struct {
-	raw         string
-	container   *Container
-	keys        []interface{}
-	dataOut     interface{}
-	compareData func(expected, actual interface{}) bool
-	errOut      error
+	raw             string
+	container       *Container
+	keys            []interface{}
+	dataOut         interface{}
+	compareData     func(expected, actual interface{}) bool
+	nilContainerOut bool
 }
 
 func runSearchTests(t *testing.T, tests []*searchTest) {
 	for i, test := range tests {
-		out, err := test.container.Search(test.keys...)
-		if err != nil {
-			if test.errOut != err {
-				t.Errorf("%d, expected error '%v', got '%v'", i, test.errOut, err)
+		out := test.container.Search(test.keys...)
+		if out == nil {
+			if !test.nilContainerOut {
+				t.Errorf("%d, unexpected nil container", i)
 			}
-		} else if out == nil {
-			t.Errorf("%d, node should not be nil", i)
 		} else if test.compareData != nil {
 			if !test.compareData(test.dataOut, out.Data) {
 				t.Errorf("%d, expected data '%v' (%T), got '%v' (%T)", i, test.dataOut, test.dataOut, out.Data, out.Data)
@@ -57,14 +55,14 @@ func TestSearchInJSON(t *testing.T) {
 			dataOut: 3.0,
 		},
 		{
-			raw:    `{}`,
-			keys:   []interface{}{"foo"},
-			errOut: ErrNotFound,
+			raw:             `{}`,
+			keys:            []interface{}{"foo"},
+			nilContainerOut: true,
 		},
 		{
-			raw:    `{"foo": "bar"}`,
-			keys:   []interface{}{foo{}},
-			errOut: ErrNotFound,
+			raw:             `{"foo": "bar"}`,
+			keys:            []interface{}{foo{}},
+			nilContainerOut: true,
 		},
 	}
 	for i, test := range tests {
@@ -85,14 +83,14 @@ func TestSearchInYAML(t *testing.T) {
 			dataOut: 3,
 		},
 		{
-			raw:    `{}`,
-			keys:   []interface{}{"foo"},
-			errOut: ErrNotFound,
+			raw:             `{}`,
+			keys:            []interface{}{"foo"},
+			nilContainerOut: true,
 		},
 		{
-			raw:    `{"foo": "bar"}`,
-			keys:   []interface{}{foo{}},
-			errOut: ErrNotFound,
+			raw:             `{"foo": "bar"}`,
+			keys:            []interface{}{foo{}},
+			nilContainerOut: true,
 		},
 		{
 			raw: `
@@ -193,14 +191,14 @@ hosts = [
 
 	tests := []*searchTest{
 		{
-			container: container,
-			keys:      []interface{}{"foo"},
-			errOut:    ErrNotFound,
+			container:       container,
+			keys:            []interface{}{"foo"},
+			nilContainerOut: true,
 		},
 		{
-			container: container,
-			keys:      []interface{}{foo{}},
-			errOut:    ErrNotFound,
+			container:       container,
+			keys:            []interface{}{foo{}},
+			nilContainerOut: true,
 		},
 		{
 			container: container,
@@ -250,9 +248,9 @@ func runSearchAndReplaceTests(t *testing.T, tests []*searchAndReplaceTest) {
 			t.Errorf("%d, could decode data", i)
 			continue
 		}
-		out, err := container.Search(test.keys...)
-		if err != nil {
-			t.Errorf("%d, unexpected error '%v'", i, err)
+		out := container.Search(test.keys...)
+		if out == nil {
+			t.Errorf("%d, unexpected nil container", i)
 			continue
 		}
 		test.replace(out)
