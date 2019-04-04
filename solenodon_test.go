@@ -235,9 +235,10 @@ type searchAndReplaceTest struct {
 	raw       string
 	unmarshal func(b []byte, v interface{}) error
 	keys      []interface{}
-	replace   func(container *Container)
-	marshal   func(v interface{}) ([]byte, error)
-	out       string
+	// replace   func(container *Container)
+	replaceWith interface{}
+	marshal     func(v interface{}) ([]byte, error)
+	out         string
 }
 
 func runSearchAndReplaceTests(t *testing.T, tests []*searchAndReplaceTest) {
@@ -248,12 +249,11 @@ func runSearchAndReplaceTests(t *testing.T, tests []*searchAndReplaceTest) {
 			t.Errorf("%d, could decode data", i)
 			continue
 		}
-		out := container.Search(test.keys...)
+		out := container.Search(test.keys...).Replace(test.replaceWith)
 		if out == nil {
 			t.Errorf("%d, unexpected nil container", i)
 			continue
 		}
-		test.replace(out)
 		b, err := test.marshal(container.Data)
 		if err != nil {
 			t.Errorf("%d, could not encode data", i)
@@ -281,28 +281,36 @@ func TestSearchAndReplaceJSON(t *testing.T) {
 }`
 	tests := []*searchAndReplaceTest{
 		{
-			raw:       raw,
-			unmarshal: json.Unmarshal,
-			keys:      []interface{}{},
-			replace: func(c *Container) {
-				if w, ok := c.Data.(map[string]interface{}); ok {
-					w["a"] = 4
-				}
-			},
-			marshal: json.Marshal,
-			out:     `{"a":4,"d":4.4,"e":[{"x":"hi"},"ho"]}`,
+			raw:         raw,
+			unmarshal:   json.Unmarshal,
+			keys:        []interface{}{"a"},
+			replaceWith: 4,
+			marshal:     json.Marshal,
+			out:         `{"a":4,"d":4.4,"e":[{"x":"hi"},"ho"]}`,
 		},
 		{
-			raw:       raw,
-			unmarshal: json.Unmarshal,
-			keys:      []interface{}{"a", "b"},
-			replace: func(c *Container) {
-				if w, ok := c.Data.([]interface{}); ok {
-					w[1] = 4
-				}
-			},
-			marshal: json.Marshal,
-			out:     `{"a":{"b":[5,4,3],"c":5},"d":4.4,"e":[{"x":"hi"},"ho"]}`,
+			raw:         raw,
+			unmarshal:   json.Unmarshal,
+			keys:        []interface{}{"a", "b", 1},
+			replaceWith: 4,
+			marshal:     json.Marshal,
+			out:         `{"a":{"b":[5,4,3],"c":5},"d":4.4,"e":[{"x":"hi"},"ho"]}`,
+		},
+		{
+			raw:         raw,
+			unmarshal:   json.Unmarshal,
+			keys:        []interface{}{"e", 0, "x"},
+			replaceWith: "bar",
+			marshal:     json.Marshal,
+			out:         `{"a":{"b":[5,2,3],"c":5},"d":4.4,"e":[{"x":"bar"},"ho"]}`,
+		},
+		{
+			raw:         raw,
+			unmarshal:   json.Unmarshal,
+			keys:        []interface{}{},
+			replaceWith: "22",
+			marshal:     json.Marshal,
+			out:         `"22"`,
 		},
 	}
 	runSearchAndReplaceTests(t, tests)
