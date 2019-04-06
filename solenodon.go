@@ -24,12 +24,9 @@ type Container struct {
 	key    interface{}
 }
 
-// Search for a value following the keys
-// keys must be of type:
-// - string
-// - int
+// Get the value following the path of the given keys
 // The returned container will be nil if no result was found
-func (c *Container) Search(keys ...interface{}) *Container {
+func (c *Container) Get(keys ...interface{}) *Container {
 	if c == nil {
 		return nil
 	}

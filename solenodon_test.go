@@ -21,7 +21,7 @@ func equalTimes(expected, actual interface{}) bool {
 	return e.Equal(a)
 }
 
-type searchTest struct {
+type getTest struct {
 	raw             string
 	container       *Container
 	keys            []interface{}
@@ -30,9 +30,9 @@ type searchTest struct {
 	nilContainerOut bool
 }
 
-func runSearchTests(t *testing.T, tests []*searchTest) {
+func runGetTests(t *testing.T, tests []*getTest) {
 	for i, test := range tests {
-		out := test.container.Search(test.keys...)
+		out := test.container.Get(test.keys...)
 		if out == nil {
 			if !test.nilContainerOut {
 				t.Errorf("%d, unexpected nil container", i)
@@ -47,8 +47,8 @@ func runSearchTests(t *testing.T, tests []*searchTest) {
 	}
 }
 
-func TestSearchInJSON(t *testing.T) {
-	tests := []*searchTest{
+func TestGetInJSON(t *testing.T) {
+	tests := []*getTest{
 		{
 			raw:     `{"a":{"b":5,"c":[5,4,7,6,3]}}`,
 			keys:    []interface{}{"a", "c", 4},
@@ -72,11 +72,11 @@ func TestSearchInJSON(t *testing.T) {
 			t.Errorf("%d, could not json decode raw data: %s", i, err)
 		}
 	}
-	runSearchTests(t, tests)
+	runGetTests(t, tests)
 }
 
-func TestSearchInYAML(t *testing.T) {
-	tests := []*searchTest{
+func TestGetInYAML(t *testing.T) {
+	tests := []*getTest{
 		{
 			raw:     `{"a":{"b":5,"c":[5,4,7,6,3]}}`,
 			keys:    []interface{}{"a", "c", 4},
@@ -141,10 +141,10 @@ b:
 			t.Errorf("%d, could not yaml decode raw data: %s", i, err)
 		}
 	}
-	runSearchTests(t, tests)
+	runGetTests(t, tests)
 }
 
-func TestSearchInTOML(t *testing.T) {
+func TestGetInTOML(t *testing.T) {
 	raw := `
 # This is a TOML document. Boom.
 
@@ -189,7 +189,7 @@ hosts = [
 		return
 	}
 
-	tests := []*searchTest{
+	tests := []*getTest{
 		{
 			container:       container,
 			keys:            []interface{}{"foo"},
@@ -228,10 +228,10 @@ hosts = [
 			dataOut:   int64(5000),
 		},
 	}
-	runSearchTests(t, tests)
+	runGetTests(t, tests)
 }
 
-type searchAndReplaceTest struct {
+type getAndReplaceTest struct {
 	raw       string
 	unmarshal func(b []byte, v interface{}) error
 	keys      []interface{}
@@ -241,7 +241,7 @@ type searchAndReplaceTest struct {
 	out         string
 }
 
-func runSearchAndReplaceTests(t *testing.T, tests []*searchAndReplaceTest) {
+func runGetAndReplaceTests(t *testing.T, tests []*getAndReplaceTest) {
 	for i, test := range tests {
 		container := &Container{}
 		err := test.unmarshal([]byte(test.raw), &container.Data)
@@ -249,7 +249,7 @@ func runSearchAndReplaceTests(t *testing.T, tests []*searchAndReplaceTest) {
 			t.Errorf("%d, could decode data", i)
 			continue
 		}
-		out := container.Search(test.keys...).Replace(test.replaceWith)
+		out := container.Get(test.keys...).Replace(test.replaceWith)
 		if out == nil {
 			t.Errorf("%d, unexpected nil container", i)
 			continue
@@ -266,7 +266,7 @@ func runSearchAndReplaceTests(t *testing.T, tests []*searchAndReplaceTest) {
 	}
 }
 
-func TestSearchAndReplaceJSON(t *testing.T) {
+func TestGetAndReplaceJSON(t *testing.T) {
 	raw := `
 {
 	"a": {
@@ -279,7 +279,7 @@ func TestSearchAndReplaceJSON(t *testing.T) {
 		"ho"
 	]
 }`
-	tests := []*searchAndReplaceTest{
+	tests := []*getAndReplaceTest{
 		{
 			raw:         raw,
 			unmarshal:   json.Unmarshal,
@@ -313,5 +313,5 @@ func TestSearchAndReplaceJSON(t *testing.T) {
 			out:         `"22"`,
 		},
 	}
-	runSearchAndReplaceTests(t, tests)
+	runGetAndReplaceTests(t, tests)
 }
