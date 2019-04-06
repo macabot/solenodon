@@ -1,13 +1,5 @@
 package solenodon
 
-type c interface {
-	Get(keys ...interface{}) *Container
-	Set(keys []interface{}, value interface{})
-	Del(keys ...interface{})
-	Search(value interface{})
-	Replace(with interface{}) *Container
-}
-
 // see: https://github.com/Jeffail/gabs/blob/master/gabs.go
 
 // Note that encoding/json by default will parse:
@@ -24,7 +16,7 @@ type Container struct {
 	key    interface{}
 }
 
-// Get the value following the path of the given keys
+// Get returns a Container containing the value following the path of the given keys
 // The returned container will be nil if no result was found
 func (c *Container) Get(keys ...interface{}) *Container {
 	if c == nil {
@@ -39,14 +31,13 @@ func (c *Container) Get(keys ...interface{}) *Container {
 		parent = data
 		switch w := data.(type) {
 		case map[string]interface{}:
-			switch v := key.(type) {
-			case string:
+			if v, ok := key.(string); ok {
 				var ok bool
 				data, ok = w[v]
 				if !ok {
 					return nil
 				}
-			default:
+			} else {
 				return nil
 			}
 		case map[interface{}]interface{}:
@@ -56,13 +47,12 @@ func (c *Container) Get(keys ...interface{}) *Container {
 				return nil
 			}
 		case []interface{}:
-			switch v := key.(type) {
-			case int:
-				if v >= len(w) {
+			if v, ok := key.(int); ok {
+				if v < 0 || v >= len(w) {
 					return nil
 				}
 				data = w[v]
-			default:
+			} else {
 				return nil
 			}
 		default:
@@ -74,6 +64,34 @@ func (c *Container) Get(keys ...interface{}) *Container {
 		parent: parent,
 		key:    key,
 	}
+}
+
+// Delete the value at the end of the path of the given keys
+func (c *Container) Delete(keys ...interface{}) *Container {
+	if c == nil {
+		return c
+	}
+	value := c.Get(keys...)
+	if value == nil {
+		return c
+	}
+	if value.parent == nil {
+		c.Data = nil
+		return c
+	}
+	switch w := value.parent.(type) {
+	case map[string]interface{}:
+		if v, ok := value.key.(string); ok {
+			delete(w, v)
+		}
+	case map[interface{}]interface{}:
+		delete(w, c.key)
+	case []interface{}:
+		if v, ok := value.key.(int); ok && v >= 0 && v < len(w) {
+			value.parent = append(w[:v], w[v+1:]...)
+		}
+	}
+	return c
 }
 
 // Replace the data
@@ -107,7 +125,7 @@ func (c *Container) Replace(with interface{}) *Container {
 	case []interface{}:
 		switch v := c.key.(type) {
 		case int:
-			if v >= len(w) {
+			if v < 0 || v >= len(w) {
 				return nil
 			}
 			w[v] = with
