@@ -84,3 +84,11 @@ func TestGetAndReplaceYAML(t *testing.T) {
 	}
 	runGetAndReplaceTests(t, tests, rawYAML, yaml.Unmarshal)
 }
+
+func TestDeleteFromYAML(t *testing.T) {
+	tests := []*deleteTest{
+		{keys: []interface{}{"servers", "alpha"}},
+		{keys: []interface{}{"hosts", 1}},
+	}
+	runDeleteTests(t, tests, rawYAML, yaml.Unmarshal)
+}

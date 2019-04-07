@@ -89,3 +89,11 @@ func TestGetAndReplaceTOML(t *testing.T) {
 	}
 	runGetAndReplaceTests(t, tests, rawTOML, toml.Unmarshal)
 }
+
+func TestDeleteFromTOML(t *testing.T) {
+	tests := []*deleteTest{
+		{keys: []interface{}{"servers", "alpha"}},
+		{keys: []interface{}{"hosts", 1}},
+	}
+	runDeleteTests(t, tests, rawTOML, toml.Unmarshal)
+}

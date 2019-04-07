@@ -71,24 +71,26 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 	if c == nil {
 		return c
 	}
-	value := c.Get(keys...)
-	if value == nil {
-		return c
-	}
-	if value.parent == nil {
+	if len(keys) == 0 {
 		c.Data = nil
 		return c
 	}
-	switch w := value.parent.(type) {
+	parent := c.Get(keys[:len(keys)-1]...)
+	if parent == nil {
+		return c
+	}
+	lastKey := keys[len(keys)-1]
+
+	switch w := parent.Data.(type) {
 	case map[string]interface{}:
-		if v, ok := value.key.(string); ok {
+		if v, ok := lastKey.(string); ok {
 			delete(w, v)
 		}
 	case map[interface{}]interface{}:
-		delete(w, c.key)
+		delete(w, lastKey)
 	case []interface{}:
-		if v, ok := value.key.(int); ok && v >= 0 && v < len(w) {
-			value.parent = append(w[:v], w[v+1:]...)
+		if v, ok := lastKey.(int); ok && v >= 0 && v < len(w) {
+			parent.Replace(append(w[:v], w[v+1:]...))
 		}
 	}
 	return c
@@ -97,8 +99,9 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 // Replace the data
 // If the container has a parent, the parent will reference the replacement
 func (c *Container) Replace(with interface{}) *Container {
+	// TODO panic if parent does not contains key?
 	if c == nil {
-		return nil
+		return c
 	}
 	if c.parent == nil {
 		c.Data = with
@@ -106,14 +109,13 @@ func (c *Container) Replace(with interface{}) *Container {
 	}
 	switch w := c.parent.(type) {
 	case map[string]interface{}:
-		switch v := c.key.(type) {
-		case string:
+		if v, ok := c.key.(string); ok {
 			if _, ok := w[v]; ok {
 				w[v] = with
 			} else {
 				return nil
 			}
-		default:
+		} else {
 			return nil
 		}
 	case map[interface{}]interface{}:
@@ -123,21 +125,14 @@ func (c *Container) Replace(with interface{}) *Container {
 			return nil
 		}
 	case []interface{}:
-		switch v := c.key.(type) {
-		case int:
-			if v < 0 || v >= len(w) {
-				return nil
-			}
+		if v, ok := c.key.(int); ok && v >= 0 && v < len(w) {
 			w[v] = with
-		default:
+		} else {
 			return nil
 		}
 	default:
 		return nil
 	}
-	return &Container{
-		Data:   with,
-		parent: c.parent,
-		key:    c.key,
-	}
+	c.Data = with
+	return c
 }

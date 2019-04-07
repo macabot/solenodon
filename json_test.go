@@ -88,5 +88,9 @@ func TestGetAndReplaceJSON(t *testing.T) {
 }
 
 func TestDeleteFromJSON(t *testing.T) {
-	// TODO implement me
+	tests := []*deleteTest{
+		{keys: []interface{}{"servers", "alpha"}},
+		{keys: []interface{}{"hosts", 1}},
+	}
+	runDeleteTests(t, tests, rawJSON, json.Unmarshal)
 }
