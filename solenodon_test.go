@@ -100,3 +100,18 @@ func runDeleteTests(t *testing.T, tests []*deleteTest, raw string, unmarshal unm
 		}
 	}
 }
+
+func TestGetFromNilContainerReturnsSelf(t *testing.T) {
+	var container *Container
+	out := container.Get()
+	if container != out {
+		t.Error("expected get on nil container to return itself")
+	}
+}
+
+func TestGetFromUnknownDataType(t *testing.T) {
+	container := &Container{Data: foo{}}
+	if container.Get("a") != nil {
+		t.Error("expected nil on getting from unknown data type")
+	}
+}

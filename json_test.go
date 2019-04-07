@@ -40,6 +40,7 @@ func TestGetInJSON(t *testing.T) {
 		{keys: []interface{}{foo{}}, nilOut: true},
 		{keys: []interface{}{"hosts", -1}, nilOut: true},
 		{keys: []interface{}{"hosts", 2}, nilOut: true},
+		{keys: []interface{}{"hosts", "alpha"}, nilOut: true},
 		{keys: []interface{}{"title"}, dataOut: "example"},
 		{keys: []interface{}{"owner", "name"}, dataOut: "macabot"},
 		{

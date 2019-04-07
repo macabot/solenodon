@@ -20,7 +20,7 @@ type Container struct {
 // The returned container will be nil if no result was found
 func (c *Container) Get(keys ...interface{}) *Container {
 	if c == nil {
-		return nil
+		return c
 	}
 	if len(keys) == 0 {
 		return c
