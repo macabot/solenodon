@@ -177,3 +177,28 @@ func TestReplaceWhenParentHasUnknownType(t *testing.T) {
 		t.Error("expected nil when replacing with parent of unknown type")
 	}
 }
+
+func TestDeleteFromNilContainer(t *testing.T) {
+	var container *Container
+	if container.Delete("foo") != container {
+		t.Error("expected delete on nil container to return itself")
+	}
+}
+
+func TestDeleteWithNoKeys(t *testing.T) {
+	container := &Container{Data: 2}
+	out := container.Delete()
+	if out != container {
+		t.Error("expected delete on container with no keys to return itself")
+	}
+	if out.Data != nil {
+		t.Error("expected delete on container with no keys to set data to nil")
+	}
+}
+
+func TestDeleteParentNotFound(t *testing.T) {
+	container := &Container{Data: 2}
+	if container.Delete("foo", "bar") != container {
+		t.Error("expected delete on container where parent is not found to return itself")
+	}
+}
