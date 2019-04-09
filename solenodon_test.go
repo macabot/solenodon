@@ -27,22 +27,23 @@ type unmarshal func(b []byte, v interface{}) error
 
 func runGetTests(t *testing.T, tests []*getTest, raw string, unmarshal unmarshal) {
 	for i, test := range tests {
-		container := &Container{}
-		if err := unmarshal([]byte(raw), &container.Data); err != nil {
+		container, err := NewContainerFromBytes([]byte(raw), unmarshal)
+		if err != nil {
 			t.Errorf("%d, could not unmarshal raw", i)
 			continue
 		}
+
 		out := container.Get(test.keys...)
 		if out == nil {
 			if !test.nilOut {
 				t.Errorf("%d, unexpected nil container", i)
 			}
 		} else if test.compareData != nil {
-			if !test.compareData(test.dataOut, out.Data) {
-				t.Errorf("%d, expected data '%v' (%T), got '%v' (%T)", i, test.dataOut, test.dataOut, out.Data, out.Data)
+			if !test.compareData(test.dataOut, out.Data()) {
+				t.Errorf("%d, expected data '%v' (%T), got '%v' (%T)", i, test.dataOut, test.dataOut, out.Data(), out.Data())
 			}
-		} else if out.Data != test.dataOut {
-			t.Errorf("%d, expected data '%v' (%T), got '%v' (%T)", i, test.dataOut, test.dataOut, out.Data, out.Data)
+		} else if out.Data() != test.dataOut {
+			t.Errorf("%d, expected data '%v' (%T), got '%v' (%T)", i, test.dataOut, test.dataOut, out.Data(), out.Data())
 		}
 	}
 }
@@ -59,9 +60,9 @@ func runGetAndReplaceTests(
 	unmarshal unmarshal,
 ) {
 	for i, test := range tests {
-		container := &Container{}
-		if err := unmarshal([]byte(raw), &container.Data); err != nil {
-			t.Errorf("%d, could decode data", i)
+		container, err := NewContainerFromBytes([]byte(raw), unmarshal)
+		if err != nil {
+			t.Errorf("%d, could not unmarshal raw", i)
 			continue
 		}
 		if out := container.Get(test.keys...).Replace(test.replaceWith); out == nil {
@@ -73,9 +74,9 @@ func runGetAndReplaceTests(
 			t.Errorf("%d, unexpected nil container at confirmation", i)
 			continue
 		}
-		if out.Data != test.replaceWith {
+		if out.Data() != test.replaceWith {
 			t.Errorf("%d, expected data after replacement '%v' (%T), got '%v' (%T)",
-				i, test.replaceWith, test.replaceWith, out.Data, out.Data)
+				i, test.replaceWith, test.replaceWith, out.Data(), out.Data())
 		}
 	}
 }
@@ -86,9 +87,9 @@ type deleteTest struct {
 
 func runDeleteTests(t *testing.T, tests []*deleteTest, raw string, unmarshal unmarshal) {
 	for i, test := range tests {
-		container := &Container{}
-		if err := unmarshal([]byte(raw), &container.Data); err != nil {
-			t.Errorf("%d, could decode data", i)
+		container, err := NewContainerFromBytes([]byte(raw), unmarshal)
+		if err != nil {
+			t.Errorf("%d, could not unmarshal raw", i)
 			continue
 		}
 		if out := container.Get(test.keys...); out == nil {
@@ -110,7 +111,7 @@ func TestGetFromNilContainerReturnsSelf(t *testing.T) {
 }
 
 func TestGetFromUnknownDataType(t *testing.T) {
-	container := &Container{Data: foo{}}
+	container := &Container{data: foo{}}
 	if container.Get("a") != nil {
 		t.Error("expected nil on getting from unknown data type")
 	}
@@ -125,7 +126,7 @@ func TestReplaceFromNilContainerReturnsSelf(t *testing.T) {
 
 func TestReplaceWhenParentIsSliceAndKeyNotInt(t *testing.T) {
 	container := &Container{
-		Data:   2,
+		data:   2,
 		parent: []interface{}{2, 3},
 		key:    "foo",
 	}
@@ -136,7 +137,7 @@ func TestReplaceWhenParentIsSliceAndKeyNotInt(t *testing.T) {
 
 func TestReplaceWhenParentIsStringMapAndKeyNotSet(t *testing.T) {
 	container := &Container{
-		Data:   2,
+		data:   2,
 		parent: map[string]interface{}{"foo": 2},
 		key:    "bar",
 	}
@@ -147,7 +148,7 @@ func TestReplaceWhenParentIsStringMapAndKeyNotSet(t *testing.T) {
 
 func TestReplaceWhenParentIsStringMapAndKeyNotString(t *testing.T) {
 	container := &Container{
-		Data:   2,
+		data:   2,
 		parent: map[string]interface{}{"foo": 2},
 		key:    2,
 	}
@@ -158,7 +159,7 @@ func TestReplaceWhenParentIsStringMapAndKeyNotString(t *testing.T) {
 
 func TestReplaceWhenParentIsMapAndKeyNotSet(t *testing.T) {
 	container := &Container{
-		Data:   2,
+		data:   2,
 		parent: map[interface{}]interface{}{"foo": 2},
 		key:    2,
 	}
@@ -169,7 +170,7 @@ func TestReplaceWhenParentIsMapAndKeyNotSet(t *testing.T) {
 
 func TestReplaceWhenParentHasUnknownType(t *testing.T) {
 	container := &Container{
-		Data:   2,
+		data:   2,
 		parent: foo{},
 		key:    2,
 	}
@@ -186,19 +187,26 @@ func TestDeleteFromNilContainer(t *testing.T) {
 }
 
 func TestDeleteWithNoKeys(t *testing.T) {
-	container := &Container{Data: 2}
+	container := &Container{data: 2}
 	out := container.Delete()
 	if out != container {
 		t.Error("expected delete on container with no keys to return itself")
 	}
-	if out.Data != nil {
+	if out.Data() != nil {
 		t.Error("expected delete on container with no keys to set data to nil")
 	}
 }
 
 func TestDeleteParentNotFound(t *testing.T) {
-	container := &Container{Data: 2}
+	container := &Container{data: 2}
 	if container.Delete("foo", "bar") != container {
 		t.Error("expected delete on container where parent is not found to return itself")
+	}
+}
+
+func TestGetDataFromNilContainer(t *testing.T) {
+	var container *Container
+	if container.Data() != nil {
+		t.Error("expected nil data from nil container")
 	}
 }

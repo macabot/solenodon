@@ -1,5 +1,7 @@
 package solenodon
 
+// TODO: add method Has(keys ...interface{}) bool
+
 // see: https://github.com/Jeffail/gabs/blob/master/gabs.go
 
 // Note that encoding/json by default will parse:
@@ -10,10 +12,36 @@ package solenodon
 
 // Container contains data
 type Container struct {
-	Data interface{}
-
+	data   interface{}
 	parent interface{}
 	key    interface{}
+}
+
+// NewContainer returns a new Container for the given data
+func NewContainer(data interface{}) *Container {
+	return &Container{data: data}
+}
+
+// NewContainerFromBytes returns a new Container using the given bytes and unmarshal function
+func NewContainerFromBytes(b []byte, unmarshal func(b []byte, target interface{}) error) (*Container, error) {
+	var data interface{}
+	err := unmarshal(b, &data)
+	return NewContainer(data), err
+}
+
+// NewContainerFromDecoder returns a new Container using the given decode function
+func NewContainerFromDecoder(decode func(v interface{}) error) (*Container, error) {
+	var data interface{}
+	err := decode(&data)
+	return NewContainer(data), err
+}
+
+// Data returns the data in the Container
+func (c *Container) Data() interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.data
 }
 
 // Get returns a Container containing the value following the path of the given keys
@@ -25,7 +53,7 @@ func (c *Container) Get(keys ...interface{}) *Container {
 	if len(keys) == 0 {
 		return c
 	}
-	data := c.Data
+	data := c.data
 	var parent, key interface{}
 	for _, key = range keys {
 		parent = data
@@ -60,7 +88,7 @@ func (c *Container) Get(keys ...interface{}) *Container {
 		}
 	}
 	return &Container{
-		Data:   data,
+		data:   data,
 		parent: parent,
 		key:    key,
 	}
@@ -72,7 +100,7 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 		return c
 	}
 	if len(keys) == 0 {
-		c.Data = nil
+		c.data = nil
 		return c
 	}
 	parent := c.Get(keys[:len(keys)-1]...)
@@ -81,7 +109,7 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 	}
 	lastKey := keys[len(keys)-1]
 
-	switch w := parent.Data.(type) {
+	switch w := parent.data.(type) {
 	case map[string]interface{}:
 		if v, ok := lastKey.(string); ok {
 			delete(w, v)
@@ -104,7 +132,7 @@ func (c *Container) Replace(with interface{}) *Container {
 		return c
 	}
 	if c.parent == nil {
-		c.Data = with
+		c.data = with
 		return c
 	}
 	switch w := c.parent.(type) {
@@ -133,6 +161,6 @@ func (c *Container) Replace(with interface{}) *Container {
 	default:
 		return nil
 	}
-	c.Data = with
+	c.data = with
 	return c
 }

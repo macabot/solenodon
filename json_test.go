@@ -3,6 +3,7 @@ package solenodon
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -93,4 +94,14 @@ func TestDeleteFromJSON(t *testing.T) {
 		{keys: []interface{}{"hosts", 1}},
 	}
 	runDeleteTests(t, tests, rawJSON, json.Unmarshal)
+}
+
+func TestNewContainerFromJSONDecoder(t *testing.T) {
+	dec := json.NewDecoder(strings.NewReader(rawJSON))
+	container, err := NewContainerFromDecoder(dec.Decode)
+	if err != nil {
+		t.Errorf("unexpected error '%s' when getting new container from JSON decoder", err.Error())
+	} else if container.Data() == nil {
+		t.Error("unexpected nil data when getting new container from JSON decoder")
+	}
 }
