@@ -127,7 +127,7 @@ func TestReplaceFromNilContainerReturnsSelf(t *testing.T) {
 func TestReplaceWhenParentIsSliceAndKeyNotInt(t *testing.T) {
 	container := &Container{
 		data:   2,
-		parent: []interface{}{2, 3},
+		parent: &Container{data: []interface{}{2, 3}},
 		key:    "foo",
 	}
 	if container.Replace(22) != nil {
@@ -135,10 +135,21 @@ func TestReplaceWhenParentIsSliceAndKeyNotInt(t *testing.T) {
 	}
 }
 
+func TestReplaceWhenParentIsStringMapSliceAndKeyNotInt(t *testing.T) {
+	container := &Container{
+		data:   map[string]interface{}{"foo": "bar"},
+		parent: &Container{data: []map[string]interface{}{{"foo": "bar"}}},
+		key:    "foo",
+	}
+	if container.Replace(33) != nil {
+		t.Error("expected nil when replacing with parent []map[string]interface{} and non-integer key")
+	}
+}
+
 func TestReplaceWhenParentIsStringMapAndKeyNotSet(t *testing.T) {
 	container := &Container{
 		data:   2,
-		parent: map[string]interface{}{"foo": 2},
+		parent: &Container{data: map[string]interface{}{"foo": 2}},
 		key:    "bar",
 	}
 	if container.Replace(22) != nil {
@@ -149,7 +160,7 @@ func TestReplaceWhenParentIsStringMapAndKeyNotSet(t *testing.T) {
 func TestReplaceWhenParentIsStringMapAndKeyNotString(t *testing.T) {
 	container := &Container{
 		data:   2,
-		parent: map[string]interface{}{"foo": 2},
+		parent: &Container{data: map[string]interface{}{"foo": 2}},
 		key:    2,
 	}
 	if container.Replace(22) != nil {
@@ -160,7 +171,7 @@ func TestReplaceWhenParentIsStringMapAndKeyNotString(t *testing.T) {
 func TestReplaceWhenParentIsMapAndKeyNotSet(t *testing.T) {
 	container := &Container{
 		data:   2,
-		parent: map[interface{}]interface{}{"foo": 2},
+		parent: &Container{data: map[interface{}]interface{}{"foo": 2}},
 		key:    2,
 	}
 	if container.Replace(22) != nil {
@@ -171,7 +182,7 @@ func TestReplaceWhenParentIsMapAndKeyNotSet(t *testing.T) {
 func TestReplaceWhenParentHasUnknownType(t *testing.T) {
 	container := &Container{
 		data:   2,
-		parent: foo{},
+		parent: &Container{data: foo{}},
 		key:    2,
 	}
 	if container.Replace(22) != nil {
@@ -208,5 +219,19 @@ func TestGetDataFromNilContainer(t *testing.T) {
 	var container *Container
 	if container.Data() != nil {
 		t.Error("expected nil data from nil container")
+	}
+}
+
+func TestContainerHas(t *testing.T) {
+	container := &Container{data: map[string]interface{}{"foo": "bar"}}
+	if !container.Has("foo") {
+		t.Error("expected container to have key 'foo'")
+	}
+}
+
+func TestContainerHasNot(t *testing.T) {
+	container := &Container{data: map[string]interface{}{"foo": "bar"}}
+	if container.Has("foo", "bar") {
+		t.Error("did not expect container to have key 'foo.bar'")
 	}
 }

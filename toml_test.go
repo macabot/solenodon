@@ -34,6 +34,18 @@ ip = "10.0.0.1"
 [servers.beta]
 ip = "10.0.0.2"
 log = false
+
+[[friends]]
+id = 0
+name = "Wood Compton"
+
+[[friends]]
+id = 1
+name = "Nina Andrews"
+
+[[friends]]
+id = 2
+name = "Catalina Newton"
 `
 
 func TestGetInTOML(t *testing.T) {
@@ -43,6 +55,7 @@ func TestGetInTOML(t *testing.T) {
 		{keys: []interface{}{"hosts", -1}, nilOut: true},
 		{keys: []interface{}{"hosts", 2}, nilOut: true},
 		{keys: []interface{}{"hosts", "alpha"}, nilOut: true},
+		{keys: []interface{}{"friends", 10}, nilOut: true},
 		{keys: []interface{}{"title"}, dataOut: "example"},
 		{keys: []interface{}{"owner", "name"}, dataOut: "macabot"},
 		{
@@ -86,6 +99,10 @@ func TestGetAndReplaceTOML(t *testing.T) {
 			keys:        []interface{}{},
 			replaceWith: "22",
 		},
+		{
+			keys:        []interface{}{"friends", 1},
+			replaceWith: "bob",
+		},
 	}
 	runGetAndReplaceTests(t, tests, rawTOML, toml.Unmarshal)
 }
@@ -94,6 +111,34 @@ func TestDeleteFromTOML(t *testing.T) {
 	tests := []*deleteTest{
 		{keys: []interface{}{"servers", "alpha"}},
 		{keys: []interface{}{"hosts", 1}},
+		{keys: []interface{}{"friends", 2}},
 	}
 	runDeleteTests(t, tests, rawTOML, toml.Unmarshal)
+}
+
+func TestHasNameOfSecondFriend(t *testing.T) {
+	raw := `
+id = "5cab94182baf40b79ef49f1e"
+age = 38
+
+[[friends]]
+id = 0
+name = "Wood Compton"
+
+[[friends]]
+id = 1
+name = "Nina Andrews"
+
+[[friends]]
+id = 2
+name = "Catalina Newton"
+`
+	container, err := NewContainerFromBytes([]byte(raw), toml.Unmarshal)
+	if err != nil {
+		panic(err)
+	}
+
+	if !container.Has("friends", 1, "name") {
+		t.Errorf("expected container to have name of second friend")
+	}
 }
