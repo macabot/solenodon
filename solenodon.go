@@ -100,7 +100,8 @@ func (c *Container) Has(keys ...interface{}) bool {
 	return c.Get(keys...) != nil
 }
 
-// Delete the value at the end of the path of the given keys
+// Delete the value, if any, at the end of the path of the given keys
+// The Container on which this method is called will be returned
 func (c *Container) Delete(keys ...interface{}) *Container {
 	if c == nil {
 		return c
@@ -135,7 +136,7 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 }
 
 // Replace the data
-// If the container has a parent, the parent will reference the replacement
+// The Container on which this method is called will be returned
 func (c *Container) Replace(with interface{}) *Container {
 	// TODO panic if parent does not contains key?
 	if c == nil {

@@ -1,8 +1,34 @@
-# Solenodon
+<h1 align="center">
+	<img src="logo/solenodon.png" width="200">
+	<br>
+	Solenodon
+</h1>
 
-Solenodon is a Go library for dealing with deserialized data for which the structure is dynamic or not known ahead of time.
+<h4 align="center">A <a href="https://golang.org/">Go</a> library for dealing with deserialized data for which the structure is dynamic or unknown.</h4>
 
-Solenodon must be combined with a serialization library that is able to deserialize data into a tree structure of maps and slices if the given target is of type `interface{}`.
+<p align="center">
+	<a href="https://godoc.org/github.com/macabot/solenodon">
+		<img src="https://godoc.org/github.com/macabot/solenodon?status.svg" alt="GoDoc">
+	</a>
+	<a href="https://travis-ci.org/macabot/solenodon">
+		<img src="https://api.travis-ci.org/macabot/solenodon.svg?branch=master" alt="Build Status Travis">
+	</a>
+</p>
+
+<p align="center">
+	<a href="#installation">Installation</a> •
+	<a href="#how-to-use">How to use</a> •
+	<a href="#credits">Credits</a>
+</p>
+
+## Installation
+
+```sh
+go get github.com/macabot/solenodon
+```
+
+## How to use
+Solenodon must be used in combination with a serialization library that is able to deserialize data into a tree structure of maps and slices given a target of type `interface{}`.
 
 Supported:
 - [encoding/json]
@@ -17,107 +43,27 @@ Unsupported:
 [github.com/BurntSushi/toml]: github.com/BurntSushi/toml
 [encoding/xml]: https://golang.org/pkg/encoding/xml/
 
-## Install
-
+### Example
+The following shows an example of how to use the `Has`, `Get`, `Delete` and `Replace` method:
 ```go
-go get github.com/macabot/solenodon
-```
-
-## Examples
-### Getting values
-```go
-package main
-
-import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/macabot/solenodon"
-)
-
-func main() {
-	raw := `{
-  "id": "5cab94182baf40b79ef49f1e",
-  "age": 38,
-  "friends": [
-    {
-      "id": 0,
-      "name": "Wood Compton"
-    },
-    {
-      "id": 1,
-      "name": "Nina Andrews"
-    },
-    {
-      "id": 2,
-      "name": "Catalina Newton"
-    }
-  ]
-}`
-	container, err := solenodon.NewContainerFromBytes([]byte(raw), json.Unmarshal)
-	if err != nil {
-		panic(err)
-	}
-
-	// type assertion is needed to get the data in the desired type
-	id, ok := container.Get("id").Data().(string)
-	fmt.Println(id, ok) // 5cab94182baf40b79ef49f1e true
-
-	// encoding/json will by default deserialize all number values as float64
-	age, ok := container.Get("age").Data().(float64)
-	fmt.Println(age, ok) // 38 true
-
-	// indexes of slices should be of type int
-	nameOfSecondFriend, ok := container.Get("friends", 1, "name").Data().(string)
-	fmt.Println(nameOfSecondFriend, ok) // Nina Andrews true
-
-	// you might not find what you're looking for
-	imaginaryFriend, ok := container.Get("friends", 3).Data().(map[string]interface{})
-	fmt.Println(imaginaryFriend, ok) // map[] false
+raw := []byte(`{"foo":"bar","items":[2,3,{"i":6,"j":7}]}`)
+container, err := solenodon.NewContainerFromBytes(raw, json.Unmarshal)
+if err != nil {
+	panic(err)
 }
-```
-
-### Has a value
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/BurntSushi/toml"
-	"github.com/macabot/solenodon"
-)
-
-func main() {
-	raw := `
-[[friends]]
-id = 0
-name = "Wood Compton"
-
-[[friends]]
-id = 1
-name = "Nina Andrews"
-
-[[friends]]
-id = 2
-name = "Catalina Newton"
-`
-	container, err := solenodon.NewContainerFromBytes([]byte(raw), toml.Unmarshal)
-	if err != nil {
-		panic(err)
-	}
-
-	hasFriends := container.Has("friends")
-	fmt.Println(hasFriends) // true
-
-	hasNameOfSecondFriend := container.Has("friends", 1, "name")
-	fmt.Println(hasNameOfSecondFriend) // true
-
-	hasAgeOfSecondFriend := container.Has("friends", 1, "age")
-	fmt.Println(hasAgeOfSecondFriend) // false
+fmt.Println(container.Has("foo")) // true
+fmt.Println(container.Get("foo").Data().(string)) // bar
+container.Get("items", 2, "j").Replace(44)
+container.Delete("items", 0)
+b, err := json.Marshal(container.Data())
+if err != nil {
+	panic(err)
 }
+fmt.Println(string(b)) // {"foo":"bar","items":[3,{"i":6,"j":44}]}
 ```
 
-### Deleting a value
+You can find more examples [here](examples).
 
-### Replacing a value
+## Credits
+
+This library was inspired by [gabs](https://github.com/Jeffail/gabs).
