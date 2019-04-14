@@ -1,7 +1,5 @@
 package solenodon
 
-// see: https://github.com/Jeffail/gabs/blob/master/gabs.go
-
 // Note that encoding/json by default will parse:
 // - all number values into float64
 // Note that github.com/BurntSushi/toml by default will parse:
@@ -15,19 +13,19 @@ type Container struct {
 	key    interface{}
 }
 
-// NewContainer returns a new Container for the given data
+// NewContainer returns a new Container for the given data.
 func NewContainer(data interface{}) *Container {
 	return &Container{data: data}
 }
 
-// NewContainerFromBytes returns a new Container using the given bytes and unmarshal function
+// NewContainerFromBytes returns a new Container using the given bytes and unmarshal function.
 func NewContainerFromBytes(b []byte, unmarshal func(b []byte, target interface{}) error) (*Container, error) {
 	var data interface{}
 	err := unmarshal(b, &data)
 	return NewContainer(data), err
 }
 
-// NewContainerFromDecoder returns a new Container using the given decode function
+// NewContainerFromDecoder returns a new Container using the given decode function.
 func NewContainerFromDecoder(decode func(v interface{}) error) (*Container, error) {
 	var data interface{}
 	err := decode(&data)
@@ -42,8 +40,8 @@ func (c *Container) Data() interface{} {
 	return c.data
 }
 
-// Get returns a Container containing the value following the path of the given keys
-// The returned container will be nil if no result was found
+// Get returns a Container containing the value following the path of the given keys.
+// The returned container will be nil if no result was found.
 func (c *Container) Get(keys ...interface{}) *Container {
 	if c == nil {
 		return c
@@ -95,13 +93,13 @@ func (c *Container) Get(keys ...interface{}) *Container {
 	return result
 }
 
-// Has returns true if the Container has a value for the given keys
+// Has returns true if the Container has a value for the given keys.
 func (c *Container) Has(keys ...interface{}) bool {
 	return c.Get(keys...) != nil
 }
 
-// Delete the value, if any, at the end of the path of the given keys
-// The Container on which this method is called will be returned
+// Delete the value, if any, at the end of the path of the given keys.
+// The Container on which this method is called will be returned.
 func (c *Container) Delete(keys ...interface{}) *Container {
 	if c == nil {
 		return c
@@ -135,8 +133,8 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 	return c
 }
 
-// Replace the data
-// The Container on which this method is called will be returned
+// Replace the data.
+// The Container on which this method is called will be returned.
 func (c *Container) Replace(with interface{}) *Container {
 	// TODO panic if parent does not contains key?
 	if c == nil {
