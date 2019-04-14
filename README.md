@@ -13,6 +13,9 @@
 	<a href="https://travis-ci.org/macabot/solenodon">
 		<img src="https://api.travis-ci.org/macabot/solenodon.svg?branch=master" alt="Build Status Travis">
 	</a>
+	<a href="https://goreportcard.com/report/github.com/macabot/solenodon">
+		<img src="https://goreportcard.com/badge/github.com/macabot/solenodon" alt="Go Report Card">
+	</a>
 </p>
 
 <p align="center">
