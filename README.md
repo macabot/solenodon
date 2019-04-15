@@ -16,12 +16,16 @@
 	<a href="https://goreportcard.com/report/github.com/macabot/solenodon">
 		<img src="https://goreportcard.com/badge/github.com/macabot/solenodon" alt="Go Report Card">
 	</a>
+	<a href="https://opensource.org/licenses/MIT">
+		<img alt="GitHub" src="https://img.shields.io/github/license/macabot/solenodon.svg">
+	</a>
 </p>
 
 <p align="center">
 	<a href="#installation">Installation</a> •
 	<a href="#how-to-use">How to use</a> •
-	<a href="#credits">Credits</a>
+	<a href="#credits">Credits</a> •
+	<a href="#license">License</a>
 </p>
 
 ## Installation
@@ -70,3 +74,7 @@ You can find more examples [here](examples).
 ## Credits
 
 This library was inspired by [gabs](https://github.com/Jeffail/gabs).
+
+## License
+
+Solenodon is made available under the [MIT License](https://opensource.org/licenses/MIT).
