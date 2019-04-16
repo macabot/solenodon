@@ -9,7 +9,8 @@ env:
 
 before_install:
   - go get -u github.com/kisielk/errcheck
+  - go get github.com/mattn/goveralls
 
 script:
   - errcheck
-  - go test -cover
+  - goveralls -service=travis-ci
