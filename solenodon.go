@@ -1,3 +1,4 @@
+// Package solenodon provides resources for dealing with deserialized data for which the structure is dynamic or unknown.
 package solenodon
 
 // Note that encoding/json by default will parse:
