@@ -48,14 +48,14 @@ func runGetTests(t *testing.T, tests []*getTest, raw string, unmarshal unmarshal
 	}
 }
 
-type getAndReplaceTest struct {
-	keys        []interface{}
-	replaceWith interface{}
+type getAndSetDataTest struct {
+	keys    []interface{}
+	setData interface{}
 }
 
-func runGetAndReplaceTests(
+func runGetAndSetDataTests(
 	t *testing.T,
-	tests []*getAndReplaceTest,
+	tests []*getAndSetDataTest,
 	raw string,
 	unmarshal unmarshal,
 ) {
@@ -65,8 +65,8 @@ func runGetAndReplaceTests(
 			t.Errorf("%d, could not unmarshal raw", i)
 			continue
 		}
-		if out := container.Get(test.keys...).Replace(test.replaceWith); out == nil {
-			t.Errorf("%d, unexpected nil container after replace", i)
+		if out := container.Get(test.keys...).SetData(test.setData); out == nil {
+			t.Errorf("%d, unexpected nil container after SetData", i)
 			continue
 		}
 		out := container.Get(test.keys...)
@@ -74,9 +74,9 @@ func runGetAndReplaceTests(
 			t.Errorf("%d, unexpected nil container at confirmation", i)
 			continue
 		}
-		if out.Data() != test.replaceWith {
-			t.Errorf("%d, expected data after replacement '%v' (%T), got '%v' (%T)",
-				i, test.replaceWith, test.replaceWith, out.Data(), out.Data())
+		if out.Data() != test.setData {
+			t.Errorf("%d, expected data after SetData '%v' (%T), got '%v' (%T)",
+				i, test.setData, test.setData, out.Data(), out.Data())
 		}
 	}
 }
@@ -117,76 +117,76 @@ func TestGetFromUnknownDataType(t *testing.T) {
 	}
 }
 
-func TestReplaceFromNilContainerReturnsSelf(t *testing.T) {
+func TestSetDataFromNilContainerReturnsSelf(t *testing.T) {
 	var container *Container
-	if container.Replace("foo") != container {
-		t.Error("expected repalce on nil container to return itself")
+	if container.SetData("foo") != container {
+		t.Error("expected SetData on nil container to return itself")
 	}
 }
 
-func TestReplaceWhenParentIsSliceAndKeyNotInt(t *testing.T) {
+func TestSetDataWhenParentIsSliceAndKeyNotInt(t *testing.T) {
 	container := &Container{
 		data:   2,
 		parent: &Container{data: []interface{}{2, 3}},
 		key:    "foo",
 	}
-	if container.Replace(22) != nil {
-		t.Error("expected nil when replacing with parent slice and non-integer key")
+	if container.SetData(22) != nil {
+		t.Error("expected nil when setting data with parent slice and non-integer key")
 	}
 }
 
-func TestReplaceWhenParentIsStringMapSliceAndKeyNotInt(t *testing.T) {
+func TestSetDataWhenParentIsStringMapSliceAndKeyNotInt(t *testing.T) {
 	container := &Container{
 		data:   map[string]interface{}{"foo": "bar"},
 		parent: &Container{data: []map[string]interface{}{{"foo": "bar"}}},
 		key:    "foo",
 	}
-	if container.Replace(33) != nil {
-		t.Error("expected nil when replacing with parent []map[string]interface{} and non-integer key")
+	if container.SetData(33) != nil {
+		t.Error("expected nil when setting data with parent []map[string]interface{} and non-integer key")
 	}
 }
 
-func TestReplaceWhenParentIsStringMapAndKeyNotSet(t *testing.T) {
+func TestSetDataWhenParentIsStringMapAndKeyNotSet(t *testing.T) {
 	container := &Container{
 		data:   2,
 		parent: &Container{data: map[string]interface{}{"foo": 2}},
 		key:    "bar",
 	}
-	if container.Replace(22) != nil {
-		t.Error("expected nil when replacing with parent string map and key not set")
+	if container.SetData(22) != nil {
+		t.Error("expected nil when setting data with parent string map and key not set")
 	}
 }
 
-func TestReplaceWhenParentIsStringMapAndKeyNotString(t *testing.T) {
+func TestSetDataWhenParentIsStringMapAndKeyNotString(t *testing.T) {
 	container := &Container{
 		data:   2,
 		parent: &Container{data: map[string]interface{}{"foo": 2}},
 		key:    2,
 	}
-	if container.Replace(22) != nil {
-		t.Error("expected nil when replacing with parent string map and key not string")
+	if container.SetData(22) != nil {
+		t.Error("expected nil when setting data with parent string map and key not string")
 	}
 }
 
-func TestReplaceWhenParentIsMapAndKeyNotSet(t *testing.T) {
+func TestSetDataWhenParentIsMapAndKeyNotSet(t *testing.T) {
 	container := &Container{
 		data:   2,
 		parent: &Container{data: map[interface{}]interface{}{"foo": 2}},
 		key:    2,
 	}
-	if container.Replace(22) != nil {
-		t.Error("expected nil when replacing with parent map and key not set")
+	if container.SetData(22) != nil {
+		t.Error("expected nil when setting data with parent map and key not set")
 	}
 }
 
-func TestReplaceWhenParentHasUnknownType(t *testing.T) {
+func TestSetDataWhenParentHasUnknownType(t *testing.T) {
 	container := &Container{
 		data:   2,
 		parent: &Container{data: foo{}},
 		key:    2,
 	}
-	if container.Replace(22) != nil {
-		t.Error("expected nil when replacing with parent of unknown type")
+	if container.SetData(22) != nil {
+		t.Error("expected nil when setting data with parent of unknown type")
 	}
 }
 

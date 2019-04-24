@@ -35,9 +35,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	container.Get("tags").Replace([]string{"a", "b", "c"})
-	container.Get("friends", 0, "name").Replace("Big Bob")
-	container.Get("balance").Replace(struct {
+	container.Get("tags").SetData([]string{"a", "b", "c"})
+	container.Get("friends", 0, "name").SetData("Big Bob")
+	container.Get("balance").SetData(struct {
 		Currency string `json:"currency"`
 		Cents    int    `json:"cents"`
 	}{Currency: "euro", Cents: 29077})

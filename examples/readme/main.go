@@ -15,7 +15,7 @@ func main() {
 	}
 	fmt.Println(container.Has("foo"))                 // true
 	fmt.Println(container.Get("foo").Data().(string)) // bar
-	container.Get("items", 2, "j").Replace(44)
+	container.Get("items", 2, "j").SetData(44)
 	container.Delete("items", 0)
 	b, err := json.Marshal(container.Data())
 	if err != nil {

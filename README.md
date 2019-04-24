@@ -54,7 +54,7 @@ Unsupported:
 [encoding/xml]: https://golang.org/pkg/encoding/xml/
 
 ### Example
-The following shows an example of how to use the `Has`, `Get`, `Delete` and `Replace` method:
+The following shows an example of how to use the `Has`, `Get`, `Delete` and `SetData` method:
 ```go
 raw := []byte(`{"foo":"bar","items":[2,3,{"i":6,"j":7}]}`)
 container, err := solenodon.NewContainerFromBytes(raw, json.Unmarshal)
@@ -63,7 +63,7 @@ if err != nil {
 }
 fmt.Println(container.Has("foo")) // true
 fmt.Println(container.Get("foo").Data().(string)) // bar
-container.Get("items", 2, "j").Replace(44)
+container.Get("items", 2, "j").SetData(44)
 container.Delete("items", 0)
 b, err := json.Marshal(container.Data())
 if err != nil {

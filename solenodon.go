@@ -123,32 +123,32 @@ func (c *Container) Delete(keys ...interface{}) *Container {
 		delete(w, lastKey)
 	case []interface{}:
 		if v, ok := lastKey.(int); ok && v >= 0 && v < len(w) {
-			parent.Replace(append(w[:v], w[v+1:]...))
+			parent.SetData(append(w[:v], w[v+1:]...))
 		}
 	case []map[string]interface{}:
 		if v, ok := lastKey.(int); ok && v >= 0 && v < len(w) {
-			parent.Replace(append(w[:v], w[v+1:]...))
+			parent.SetData(append(w[:v], w[v+1:]...))
 		}
 	}
 	return c
 }
 
-// Replace the data.
+// SetData sets the given data in the Container.
 // The Container on which this method is called will be returned.
-func (c *Container) Replace(with interface{}) *Container {
+func (c *Container) SetData(data interface{}) *Container {
 	// TODO panic if parent does not contains key?
 	if c == nil {
 		return c
 	}
 	if c.parent == nil {
-		c.data = with
+		c.data = data
 		return c
 	}
 	switch w := c.parent.data.(type) {
 	case map[string]interface{}:
 		if v, ok := c.key.(string); ok {
 			if _, ok := w[v]; ok {
-				w[v] = with
+				w[v] = data
 			} else {
 				return nil
 			}
@@ -157,30 +157,30 @@ func (c *Container) Replace(with interface{}) *Container {
 		}
 	case map[interface{}]interface{}:
 		if _, ok := w[c.key]; ok {
-			w[c.key] = with
+			w[c.key] = data
 		} else {
 			return nil
 		}
 	case []interface{}:
 		if v, ok := c.key.(int); ok && v >= 0 && v < len(w) {
-			w[v] = with
+			w[v] = data
 		} else {
 			return nil
 		}
 	case []map[string]interface{}:
 		if v, ok := c.key.(int); ok && v >= 0 && v < len(w) {
-			parentReplacement := make([]interface{}, len(w))
+			parentData := make([]interface{}, len(w))
 			for i, x := range w {
-				parentReplacement[i] = x
+				parentData[i] = x
 			}
-			parentReplacement[v] = with
-			c.parent.Replace(parentReplacement)
+			parentData[v] = data
+			c.parent.SetData(parentData)
 		} else {
 			return nil
 		}
 	default:
 		return nil
 	}
-	c.data = with
+	c.data = data
 	return c
 }

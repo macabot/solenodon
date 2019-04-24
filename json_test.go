@@ -66,26 +66,26 @@ func TestGetInJSON(t *testing.T) {
 	runGetTests(t, tests, rawJSON, json.Unmarshal)
 }
 
-func TestGetAndReplaceJSON(t *testing.T) {
-	tests := []*getAndReplaceTest{
+func TestGetAndSetDataJSON(t *testing.T) {
+	tests := []*getAndSetDataTest{
 		{
-			keys:        []interface{}{"owner"},
-			replaceWith: 4,
+			keys:    []interface{}{"owner"},
+			setData: 4,
 		},
 		{
-			keys:        []interface{}{"servers", "alpha", "ip"},
-			replaceWith: "123.456.789",
+			keys:    []interface{}{"servers", "alpha", "ip"},
+			setData: "123.456.789",
 		},
 		{
-			keys:        []interface{}{"database", "ports", 1},
-			replaceWith: 8088,
+			keys:    []interface{}{"database", "ports", 1},
+			setData: 8088,
 		},
 		{
-			keys:        []interface{}{},
-			replaceWith: "22",
+			keys:    []interface{}{},
+			setData: "22",
 		},
 	}
-	runGetAndReplaceTests(t, tests, rawJSON, json.Unmarshal)
+	runGetAndSetDataTests(t, tests, rawJSON, json.Unmarshal)
 }
 
 func TestDeleteFromJSON(t *testing.T) {
