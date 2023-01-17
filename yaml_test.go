@@ -3,8 +3,9 @@ package solenodon
 import (
 	"reflect"
 	"testing"
+	"time"
 
-	"github.com/go-yaml/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 var rawYAML = `
@@ -43,7 +44,10 @@ func TestGetInYAML(t *testing.T) {
 		{keys: []interface{}{"owner", "name"}, dataOut: "macabot"},
 		{
 			keys:    []interface{}{"owner", "time"},
-			dataOut: "2001-02-20T21:03:55Z",
+			dataOut: time.Date(2001, 02, 20, 21, 3, 55, 0, time.UTC),
+			compareData: func(expected, actual interface{}) bool {
+				return expected.(time.Time).Equal(actual.(time.Time))
+			},
 		},
 		{
 			keys:        []interface{}{"database", "ports"},

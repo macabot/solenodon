@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-yaml/yaml"
 	"github.com/macabot/solenodon"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
